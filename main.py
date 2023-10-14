@@ -58,10 +58,11 @@ def draw_hands(surface, ax, ay, bx, by, hand, color, size, lw):
     cx, cy = 0, 0
     nax, nay = ax - cx, ay - cy
     nbx, nby = bx - cx, by - cy
-    nax_ = nax * math.cos(math.radians(hand)) - nay * math.sin(math.radians(hand))
-    nay_ = nax * math.sin(math.radians(hand)) + nay * math.cos(math.radians(hand))
-    nbx_ = nbx * math.cos(math.radians(hand)) - nby * math.sin(math.radians(hand))
-    nby_ = nbx * math.sin(math.radians(hand)) + nby * math.cos(math.radians(hand))
+    hand_angle_in_radians = math.radians(hand)
+    nax_ = nax * math.cos(hand_angle_in_radians) - nay * math.sin(hand_angle_in_radians)
+    nay_ = nax * math.sin(hand_angle_in_radians) + nay * math.cos(hand_angle_in_radians)
+    nbx_ = nbx * math.cos(hand_angle_in_radians) - nby * math.sin(hand_angle_in_radians)
+    nby_ = nbx * math.sin(hand_angle_in_radians) + nby * math.cos(hand_angle_in_radians)
     fax, fay = nax_ + cx, nay_ + cy
     fbx, fby = nbx_ + cx, nby_ + cy
     pygame.draw.line(surface, color, get_position(fax, fay), get_position(fbx, fby), lw)
@@ -141,16 +142,16 @@ while running:
     for i in range(60):
         x1, y1 = 0, 0
         x2, y2 = 0, 22
-        x3 = math.cos(math.radians(indicator_angle)) * (x2 - x1) - math.sin(math.radians(indicator_angle)) * (y2 - y1) + x1
-        y3 = math.sin(math.radians(indicator_angle)) * (x2 - x1) + math.cos(math.radians(indicator_angle)) * (y2 - y1) + y1
-        circle_size = 20
+        angle_in_radians = math.radians(indicator_angle)
+        x3 = math.cos(angle_in_radians) * (x2 - x1) - math.sin(angle_in_radians) * (y2 - y1) + x1
+        y3 = math.sin(angle_in_radians) * (x2 - x1) + math.cos(angle_in_radians) * (y2 - y1) + y1
         if (indicator_angle / 6) % 5 == 0:
             clock_label_text = (indicator_angle / 6) / 5
             clock_label_text = "12" if clock_label_text == 0 else clock_label_text
             clock_label_text = str(abs(int(clock_label_text)))
             draw_text(CLOCK_FONT, screen, get_position(x3, y3), clock_label_text, (200,200,200))
         else:
-            pygame.draw.circle(screen, (0,255,0), get_position(x3, y3), get_size(circle_size))
+            pygame.draw.circle(screen, (0,255,0), get_position(x3, y3), get_size(20))
         indicator_angle -= 6
     pygame.display.flip()
     clock.tick(30)

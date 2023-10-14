@@ -54,6 +54,42 @@ second_hand_angle = -seconds * 6
 minute_hand_angle = -minutes * 6
 hour_hand_angle = -hours * 30
 
+def draw_hands(surface, ax, ay, bx, by, hand, color, size, lw):
+    cx, cy = 0, 0
+    nax, nay = ax - cx, ay - cy
+    nbx, nby = bx - cx, by - cy
+    nax_ = nax * math.cos(math.radians(hand)) - nay * math.sin(math.radians(hand))
+    nay_ = nax * math.sin(math.radians(hand)) + nay * math.cos(math.radians(hand))
+    nbx_ = nbx * math.cos(math.radians(hand)) - nby * math.sin(math.radians(hand))
+    nby_ = nbx * math.sin(math.radians(hand)) + nby * math.cos(math.radians(hand))
+    fax, fay = nax_ + cx, nay_ + cy
+    fbx, fby = nbx_ + cx, nby_ + cy
+    pygame.draw.line(surface, color, get_position(fax, fay), get_position(fbx, fby), lw)
+    pygame.draw.circle(surface, color, get_position(cx, cy), size)
+
+def create_coordinate(surface):
+    for i in range(lines_no):
+        start_pos_x = step_x * i
+        start_pos_y = (HEIGHT / 2) - LINE_LENGTH
+        end_pos_x = step_x * i
+        end_pos_y = (HEIGHT / 2) + LINE_LENGTH
+        pygame.draw.line(surface, (100,100,100), (start_pos_x+pos_x, start_pos_y+pos_y), (end_pos_x+pos_x, end_pos_y+pos_y))
+        label = i - (lines_no / 2)
+        surface.blit(LABEL_FONT.render(str(int(label)), True, (100,100,100)),(end_pos_x+pos_x, end_pos_y+pos_y))
+        start_pos_x = (WIDTH / 2) - LINE_LENGTH
+        start_pos_y = step_y * i
+        end_pos_x = (WIDTH / 2) + LINE_LENGTH
+        end_pos_y = step_y * i
+        pygame.draw.line(surface, (100,100,100), (start_pos_x+pos_x, start_pos_y+pos_y), (end_pos_x+pos_x, end_pos_y+pos_y))
+        label = (lines_no / 2) - i
+        if not label:
+            continue
+        surface.blit(LABEL_FONT.render(str(int(label)), True, (100,100,100)),(end_pos_x+pos_x, end_pos_y+pos_y))
+    pygame.draw.line(surface, (100,100,100), (0+pos_x, HEIGHT/2+pos_y), (WIDTH+pos_x, HEIGHT/2+pos_y))
+    pygame.draw.line(surface, (100,100,100), (WIDTH/2+pos_x, 0+pos_y), (WIDTH/2+pos_x, HEIGHT+pos_y))
+    pygame.draw.line(surface, (100,100,100), (0, mouse_pos_y), (WIDTH, mouse_pos_y))
+    pygame.draw.line(surface, (100,100,100), (mouse_pos_x, 0), (mouse_pos_x, HEIGHT))
+
 while running:
     keys = pygame.key.get_pressed()
     mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
@@ -62,12 +98,18 @@ while running:
             running = False
         if event.type == pygame.MOUSEWHEEL:
             lines_no -= (event.y + event.y)
-            step_x = WIDTH / lines_no
-            step_y = HEIGHT / lines_no
+            if lines_no > 1:
+                step_x = WIDTH / lines_no
+                step_y = HEIGHT / lines_no
+            else:
+                lines_no = 50
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
                 pos_x = 0
                 pos_y = 0
+                lines_no = 50
+                step_x = WIDTH / lines_no
+                step_y = HEIGHT / lines_no
         if event.type == timer_event:
             if seconds == 60:
                 minute_hand_angle -= 6
@@ -90,72 +132,11 @@ while running:
     if keys[pygame.K_DOWN]:
         pos_y += sensitivity
     screen.fill((20,30,40))
-    for i in range(lines_no):
-        start_pos_x = step_x * i
-        start_pos_y = (HEIGHT / 2) - LINE_LENGTH
-        end_pos_x = step_x * i
-        end_pos_y = (HEIGHT / 2) + LINE_LENGTH
-        # pygame.draw.line(screen, (100,100,100), (start_pos_x+pos_x, start_pos_y+pos_y), (end_pos_x+pos_x, end_pos_y+pos_y))
-        label = i - (lines_no / 2)
-        # screen.blit(LABEL_FONT.render(str(int(label)), True, (100,100,100)),(end_pos_x+pos_x, end_pos_y+pos_y))
-        start_pos_x = (WIDTH / 2) - LINE_LENGTH
-        start_pos_y = step_y * i
-        end_pos_x = (WIDTH / 2) + LINE_LENGTH
-        end_pos_y = step_y * i
-        # pygame.draw.line(screen, (100,100,100), (start_pos_x+pos_x, start_pos_y+pos_y), (end_pos_x+pos_x, end_pos_y+pos_y))
-        label = (lines_no / 2) - i
-        if label:
-            # screen.blit(LABEL_FONT.render(str(int(label)), True, (100,100,100)),(end_pos_x+pos_x, end_pos_y+pos_y))
-            ...
-    # pygame.draw.line(screen, (100,100,100), (0+pos_x, HEIGHT/2+pos_y), (WIDTH+pos_x, HEIGHT/2+pos_y))
-    # pygame.draw.line(screen, (100,100,100), (WIDTH/2+pos_x, 0+pos_y), (WIDTH/2+pos_x, HEIGHT+pos_y))
-    # pygame.draw.line(screen, (100,100,100), (0, mouse_pos_y), (WIDTH, mouse_pos_y))
-    # pygame.draw.line(screen, (100,100,100), (mouse_pos_x, 0), (mouse_pos_x, HEIGHT))
-
+    create_coordinate(screen)
     pygame.draw.circle(screen, (255,255,0), get_position(0,0), get_size(2400), 1)
-
-    hr_ax, hr_ay = 0, 0
-    hr_bx, hr_by = 0, 15
-    hr_cx, hr_cy = 0, 0
-    hr_nax, hr_nay = hr_ax - hr_cx, hr_ay - hr_cy
-    hr_nbx, hr_nby = hr_bx - hr_cx, hr_by - hr_cy
-    hr_nax_ = hr_nax * math.cos(math.radians(hour_hand_angle)) - hr_nay * math.sin(math.radians(hour_hand_angle))
-    hr_nay_ = hr_nax * math.sin(math.radians(hour_hand_angle)) + hr_nay * math.cos(math.radians(hour_hand_angle))
-    hr_nbx_ = hr_nbx * math.cos(math.radians(hour_hand_angle)) - hr_nby * math.sin(math.radians(hour_hand_angle))
-    hr_nby_ = hr_nbx * math.sin(math.radians(hour_hand_angle)) + hr_nby * math.cos(math.radians(hour_hand_angle))
-    hr_fax, hr_fay = hr_nax_ + hr_cx, hr_nay_ + hr_cy
-    hr_fbx, hr_fby = hr_nbx_ + hr_cx, hr_nby_ + hr_cy
-    pygame.draw.line(screen, (0,0,255), get_position(hr_fax, hr_fay), get_position(hr_fbx, hr_fby), 7)
-    pygame.draw.circle(screen, (0,0,255), get_position(hr_cx, hr_cy), get_size(100))
-
-    min_ax, min_ay = 0, 0
-    min_bx, min_by = 0, 20
-    min_cx, min_cy = 0, 0
-    min_nax, min_nay = min_ax - min_cx, min_ay - min_cy
-    min_nbx, min_nby = min_bx - min_cx, min_by - min_cy
-    min_nax_ = min_nax * math.cos(math.radians(minute_hand_angle)) - min_nay * math.sin(math.radians(minute_hand_angle))
-    min_nay_ = min_nax * math.sin(math.radians(minute_hand_angle)) + min_nay * math.cos(math.radians(minute_hand_angle))
-    min_nbx_ = min_nbx * math.cos(math.radians(minute_hand_angle)) - min_nby * math.sin(math.radians(minute_hand_angle))
-    min_nby_ = min_nbx * math.sin(math.radians(minute_hand_angle)) + min_nby * math.cos(math.radians(minute_hand_angle))
-    min_fax, min_fay = min_nax_ + min_cx, min_nay_ + min_cy
-    min_fbx, min_fby = min_nbx_ + min_cx, min_nby_ + min_cy
-    pygame.draw.line(screen, (0,255,0), get_position(min_fax, min_fay), get_position(min_fbx, min_fby), 3)
-    pygame.draw.circle(screen, (0,255,0), get_position(min_cx, min_cy), get_size(75))
-
-    sec_ax, sec_ay = 0, -3
-    sec_bx, sec_by = 0, 20
-    sec_cx, sec_cy = 0, 0
-    sec_nax, sec_nay = sec_ax - sec_cx, sec_ay - sec_cy
-    sec_nbx, sec_nby = sec_bx - sec_cx, sec_by - sec_cy
-    sec_nax_ = sec_nax * math.cos(math.radians(second_hand_angle)) - sec_nay * math.sin(math.radians(second_hand_angle))
-    sec_nay_ = sec_nax * math.sin(math.radians(second_hand_angle)) + sec_nay * math.cos(math.radians(second_hand_angle))
-    sec_nbx_ = sec_nbx * math.cos(math.radians(second_hand_angle)) - sec_nby * math.sin(math.radians(second_hand_angle))
-    sec_nby_ = sec_nbx * math.sin(math.radians(second_hand_angle)) + sec_nby * math.cos(math.radians(second_hand_angle))
-    sec_fax, sec_fay = sec_nax_ + sec_cx, sec_nay_ + sec_cy
-    sec_fbx, sec_fby = sec_nbx_ + sec_cx, sec_nby_ + sec_cy
-    pygame.draw.line(screen, (255,0,0), get_position(sec_fax, sec_fay), get_position(sec_fbx, sec_fby), 1)
-    pygame.draw.circle(screen, (255,0,0), get_position(sec_cx, sec_cy), get_size(50))
-
+    draw_hands(screen, 0, 0, 0, 15, hour_hand_angle, (0,0,255), get_size(100), 7)
+    draw_hands(screen, 0, 0, 0, 20, minute_hand_angle, (0,255,0), get_size(75), 3)
+    draw_hands(screen, 0, -3, 0, 20, second_hand_angle, (255,0,0), get_size(50), 1)
     indicator_angle = 0
     for i in range(60):
         x1, y1 = 0, 0
@@ -164,11 +145,13 @@ while running:
         y3 = math.sin(math.radians(indicator_angle)) * (x2 - x1) + math.cos(math.radians(indicator_angle)) * (y2 - y1) + y1
         circle_size = 20
         if (indicator_angle / 6) % 5 == 0:
-            draw_text(CLOCK_FONT, screen, get_position(x3, y3), str(abs(int((indicator_angle / 6)/5))), (200,200,200))
+            clock_label_text = (indicator_angle / 6) / 5
+            clock_label_text = "12" if clock_label_text == 0 else clock_label_text
+            clock_label_text = str(abs(int(clock_label_text)))
+            draw_text(CLOCK_FONT, screen, get_position(x3, y3), clock_label_text, (200,200,200))
         else:
             pygame.draw.circle(screen, (0,255,0), get_position(x3, y3), get_size(circle_size))
         indicator_angle -= 6
-
     pygame.display.flip()
     clock.tick(30)
 

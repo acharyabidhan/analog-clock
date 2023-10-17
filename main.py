@@ -51,8 +51,8 @@ minutes = int(time.strftime("%M"))
 hours = int(time.strftime("%I"))
 
 second_hand_angle = -seconds * 6
-minute_hand_angle = -minutes * 6
-hour_hand_angle = -hours * 30
+minute_hand_angle = -(minutes * 6 + ((6 * seconds) / 60))
+hour_hand_angle = -((hours * 30) + ((30 * minutes) / 60))
 
 def draw_hands(surface, ax, ay, bx, by, hand, color, size, lw):
     cx, cy = 0, 0
@@ -112,12 +112,12 @@ while running:
                 step_x = WIDTH / lines_no
                 step_y = HEIGHT / lines_no
         if event.type == timer_event:
+            minute_hand_angle -= 0.1
             if seconds == 60:
-                minute_hand_angle -= 6
                 minutes += 1
                 seconds = 0
+                hour_hand_angle -= 0.5
             if minutes == 60:
-                hour_hand_angle -= 6
                 hours += 1
                 minutes = 0
             if hours == 12:
@@ -132,9 +132,9 @@ while running:
         pos_y -= sensitivity
     if keys[pygame.K_DOWN]:
         pos_y += sensitivity
-    screen.fill((20,30,40))
+    screen.fill((0,0,0))
     create_coordinate(screen)
-    pygame.draw.circle(screen, (255,255,0), get_position(0,0), get_size(2400), 1)
+    pygame.draw.circle(screen, (255,0,0), get_position(0,0), get_size(2400), 1)
     draw_hands(screen, 0, 0, 0, 15, hour_hand_angle, (0,0,255), get_size(100), 7)
     draw_hands(screen, 0, 0, 0, 20, minute_hand_angle, (0,255,0), get_size(75), 3)
     draw_hands(screen, 0, -3, 0, 20, second_hand_angle, (255,0,0), get_size(50), 1)
@@ -149,7 +149,7 @@ while running:
             clock_label_text = (indicator_angle / 6) / 5
             clock_label_text = "12" if clock_label_text == 0 else clock_label_text
             clock_label_text = str(abs(int(clock_label_text)))
-            draw_text(CLOCK_FONT, screen, get_position(x3, y3), clock_label_text, (200,200,200))
+            draw_text(CLOCK_FONT, screen, get_position(x3, y3), clock_label_text, (0,0,255))
         else:
             pygame.draw.circle(screen, (0,255,0), get_position(x3, y3), get_size(20))
         indicator_angle -= 6
